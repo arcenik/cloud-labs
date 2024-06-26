@@ -1,5 +1,5 @@
 variable "name" {
-  default = "lab-02"
+  default = "lab-vm"
 }
 
 # switzerlandnorth
