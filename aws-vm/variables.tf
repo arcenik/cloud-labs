@@ -1,18 +1,11 @@
 variable "name" {
   default = "lab-vm"
-}
-
-# eu-central-1
-# eu-central-1a
-# eu-central-1b
-# eu-central-1c
-
-variable "region" {
-  default = "eu-central-1" # Frankfurt
+  type = string
 }
 
 variable "mainaz" {
-  default = "eu-central-1a"
+  default = "eu-central-1a" # Frankfurt
+  type = string
 }
 
 variable "tags" {

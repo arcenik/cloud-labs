@@ -1,25 +1,26 @@
 locals {
+  ec2_type = "t4g.nano"
+  ec2_arch = "arm64"
+  ami_name_template = "debian-12-arm64-20*"
 
-  # https://aws.amazon.com/marketplace/seller-profile?id=4d4d4e5f-c474-49f2-8b18-94de9d43e2c0
-  debian_12_amd64 = "ami-042e6fdb154c830c5"
-  debian_12_arm64 = "ami-04bd057ffbd865312"
-
+  # ec2_type = "t3a.nano"
+  # ec2_arch = "x86_64"
+  # ami_name_template = "debian-12-amd64-20*"
 }
 
-data "aws_ami" "ubuntu" {
+data "aws_ami" "debian12_arm64" {
+  owners = ["136693071363"] # from https://wiki.debian.org/Cloud/AmazonEC2Image/Bookworm
   most_recent = true
 
   filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+    name = "name"
+    values = [local.ami_name_template]
   }
 
   filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
+    name   = "architecture"
+    values = [local.ec2_arch]
   }
-
-  owners = ["099720109477"] # Canonical
 }
 
 resource "aws_key_pair" "test1" {
@@ -31,8 +32,8 @@ resource "aws_key_pair" "test1" {
 
 resource "aws_instance" "test1" {
   subnet_id = aws_subnet.main.id
-  ami           = local.debian_12_amd64
-  instance_type = "t3.micro"
+  ami           = data.aws_ami.debian12_arm64.image_id
+  instance_type = local.ec2_type
   key_name      = aws_key_pair.test1.key_name
 
   tags = merge(var.tags, { Name = "${var.name}-test1-vm" })
