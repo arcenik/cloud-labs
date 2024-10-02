@@ -12,12 +12,17 @@ resource "aws_autoscaling_group" "main" {
   default_instance_warmup = var.instance_warmup
   default_cooldown = var.cooldown
 
-  mixed_instances_policy {
-    launch_template {
-      launch_template_specification {
-        launch_template_id = aws_launch_template.main.id
-        version = "$Latest"
-      }
+  launch_template {
+    id      = aws_launch_template.main.id
+    version = aws_launch_template.main.latest_version
+  }
+
+  dynamic "tag" {
+    for_each = var.tags
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
     }
   }
 
@@ -29,8 +34,12 @@ resource "aws_launch_template" "main" {
 
   image_id      = var.image_id
   instance_type = var.instance_type
+  key_name      = var.key_name
 
-  key_name = var.key_name
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens = "required"
+  }
 
   vpc_security_group_ids = [ resource.aws_security_group.main.id ]
 
@@ -38,6 +47,7 @@ resource "aws_launch_template" "main" {
 }
 
 resource "aws_security_group" "main" {
+  #checkov:skip=CKV2_AWS_5:False positive, used in aws_launch_template
   name        = var.name
   description = format("Security Group for ASG %s", var.name)
   vpc_id      = var.vpc_id
@@ -46,7 +56,9 @@ resource "aws_security_group" "main" {
 }
 
 resource "aws_security_group_rule" "ssh" {
+  #checkov:skip=CKV_AWS_24:For lab without bastion/vpn
   type = "ingress"
+  description = "SSH access"
   from_port = 22
   to_port = 22
   protocol = "tcp"
@@ -55,7 +67,9 @@ resource "aws_security_group_rule" "ssh" {
 }
 
 resource "aws_security_group_rule" "in_http" {
+  #checkov:skip=CKV_AWS_260:For lab without bastion/vpn
   type = "ingress"
+  description = "HTTP access"
   from_port = 80
   to_port = 80
   protocol = "tcp"
@@ -65,6 +79,7 @@ resource "aws_security_group_rule" "in_http" {
 
 resource "aws_security_group_rule" "out_ping" {
   type = "egress"
+  description = "Ping output"
   from_port = 8
   to_port = 8
   protocol = "icmp"
@@ -74,6 +89,7 @@ resource "aws_security_group_rule" "out_ping" {
 
 resource "aws_security_group_rule" "out_http" {
   type = "egress"
+  description = "HTTP output"
   from_port = 80
   to_port = 80
   protocol = "tcp"
@@ -83,6 +99,7 @@ resource "aws_security_group_rule" "out_http" {
 
 resource "aws_security_group_rule" "out_https" {
   type = "egress"
+  description = "HTTPS output"
   from_port = 443
   to_port = 443
   protocol = "tcp"
