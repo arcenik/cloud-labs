@@ -31,20 +31,37 @@ resource "aws_key_pair" "test1" {
 }
 
 resource "aws_instance" "test1" {
+  #checkov:skip=CKV2_AWS_41:No IAM role for this simple lab
   subnet_id = aws_subnet.main.id
   ami           = data.aws_ami.debian12_arm64.image_id
   instance_type = local.ec2_type
   key_name      = aws_key_pair.test1.key_name
+  ebs_optimized = true
+  monitoring    = true
+
+  #checkov:skip=CKV_AWS_88:Single instance without VPN/Jump host
+  associate_public_ip_address = true
+
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
+
+  root_block_device {
+    encrypted = true
+  }
 
   tags = merge(var.tags, { Name = "${var.name}-test1-vm" })
 }
 
 resource "aws_security_group_rule" "ssh" {
-  type = "ingress"
-  from_port = 22
-  to_port = 22
-  protocol = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
+  type              = "ingress"
+  description       = "SSH Access"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  #checkov:skip=CKV_AWS_24:Single instance without VPN/Jump host
+  cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_vpc.main.default_security_group_id
 }
 

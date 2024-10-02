@@ -1,4 +1,6 @@
 resource "aws_vpc" "main" {
+  #checkov:skip=CKV2_AWS_11:No VPC flow log for this lab
+  #checkov:skip=CKV2_AWS_12:No egress restriction for this lab
   cidr_block = "10.0.0.0/16"
   tags = merge(var.tags, { Name = "${var.name}-test1-vpc" })
 }
@@ -7,7 +9,7 @@ resource "aws_subnet" "main" {
   vpc_id = aws_vpc.main.id
   cidr_block = "10.0.0.0/24"
   availability_zone = var.mainaz
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
   tags = merge(var.tags, { Name = "${var.name}-test1-subnet" })
 }
 
