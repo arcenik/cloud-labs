@@ -7,6 +7,7 @@ resource "azurerm_public_ip" "test1" {
 }
 
 resource "azurerm_network_interface" "test1" {
+  #checkov:skip=CKV_AZURE_119:No vpn/bastion for lab environment
   name = "${var.name}-test1-nic"
   location = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -20,6 +21,8 @@ resource "azurerm_network_interface" "test1" {
 }
 
 resource "azurerm_virtual_machine" "test1" {
+  #checkov:skip=CKV2_AZURE_10:No antimalware for lab environment
+  #checkov:skip=CKV2_AZURE_12:No backup for lab environment
   name = "${var.name}-test1-vm"
   location = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -32,9 +35,9 @@ resource "azurerm_virtual_machine" "test1" {
   # delete_data_disks_on_termination = true
 
   storage_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
+    publisher = "Debian"
+    offer     = "debian-12"
+    sku       = "12"
     version   = "latest"
   }
 

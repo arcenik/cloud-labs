@@ -1,4 +1,5 @@
 variable "name" {
+  type = string
   default = "lab-vm"
 }
 
@@ -8,11 +9,8 @@ variable "name" {
 # switzerlandnorth-az3
 
 variable "region" {
+  type = string
   default = "switzerlandnorth"
-}
-
-variable "mainaz" {
-  default = "switzerlandnorth-az1"
 }
 
 variable "tags" {
